@@ -8,9 +8,10 @@ locationBasedCommands = ["getBlock", "getLocation"]
 class processReturnMsg:
 	#Process returned json from server
 	#3 diff types of return msg
-	def __init__(self, recvMsg, comm):
+	def __init__(self, recvMsg, comm, feedback):
 		self.recvMsg = recvMsg
 		self.comm = comm
+		self.feedback = feedback
 		self.processMsg()
 
 	def processMsg(self):
@@ -55,8 +56,14 @@ class processReturnMsg:
 
 	def checkStatus(self, code):
 		if code == "ok" or code == "success" :
-			print "[SUCCESS] " + self.comm
+			print "[SUCCESS] " + self.comm,
 		elif code == "invoked" :
-			print "[EXECUTED] " + self.comm
+			print "[EXECUTED] " + self.comm, 
 		else : 
-			print "[FAILURE] " + self.comm
+			print "[FAILURE] " + self.comm,
+
+		if len(self.feedback) == 0 :
+			print ""
+		else :
+			print "\t\t" + self.feedback[0]
+

@@ -11,7 +11,7 @@ def create_connection(name, url):
 	# conn = Connection(name, url)
 	print "Connection with " + url + " established"
 
-def getWorld(index):		#done
+def getWorld(index):		
 	#return worldObj
 	global conn, serverUrl
 	json_string = [
@@ -23,19 +23,15 @@ def getWorld(index):		#done
 			]
 		}
 	]
+	feedback = "got world {worldIndex}".format(worldIndex = index)
+
 	returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-	print returned_json
-	processReturnMsg(returned_json, "getWorld")
+	processReturnMsg(returned_json, "getWorld", [feedback])
 
 	returned_dict = json.loads(returned_json)
 	return World(returned_dict["index"])
 
-	#Process returnMsg
-	#processReturnMsg(self.conn.recv(), "getWorld")
-
-	#return world
-
-def getPlayer():		#done
+def getPlayer():		
 	#return Player
 	global conn, playerName
 	json_string = [
@@ -49,9 +45,10 @@ def getPlayer():		#done
 		}
 	]
 
-	returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+	feedback = "got {player}".format(player = playerName.upper())
 
-	processReturnMsg(returned_json, "getPlayer")
+	returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+	processReturnMsg(returned_json, "getPlayer", [feedback])
 
 	returned_dict = json.loads(returned_json)
 	return Player(returned_dict["playerName"])
@@ -63,7 +60,7 @@ class Block:
 		self.type = ty
 		self.location = location
 
-	def setType(self, ty):		#done
+	def setType(self, ty):		
 		global conn
 		json_string = [
 			{
@@ -92,14 +89,17 @@ class Block:
 			}
 		]
 
+		feedback = "got {type} at {x:.2f}, {y:.2f}, {z:.2f}".format(type = self.type.upper(), x = self.location.x, 
+			y = self.location.y, z = self.location.z)
+
 		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		processReturnMsg(returned_json, "setBlockType")
+		processReturnMsg(returned_json, "setBlockType", [feedback])
 
 class Player:
 	def __init__(self, name):
 		self.name = name
 
-	def getLocation(self): 		#done
+	def getLocation(self): 		
 		#return Location 
 		json_string = [
 			{
@@ -115,14 +115,15 @@ class Player:
 			}
 		]
 
+
 		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-
-		processReturnMsg(returned_json, "getLocation")
-
 		returned_dict = json.loads(returned_json)
+		feedback = "returned {x:.2f}, {y:.2f}, {z:.2f}".format(x = returned_dict["x"], y = returned_dict["y"], z = returned_dict["z"])
+
+		processReturnMsg(returned_json, "getLocation", [feedback])
 		return Location(returned_dict["x"], returned_dict["y"], returned_dict["z"])	
 
-	def setLocation(self, x, y, z):		#done
+	def setLocation(self, x, y, z):		
 		#send location
 		json_string = [
 			{
@@ -142,10 +143,12 @@ class Player:
 			}
 		]
 
-		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		processReturnMsg(returned_json, "setLocation")		
+		feedback = "set {player} at {x:.2f}, {y:.2f}, {z:.2f}".format(player = self.name.upper(), x = x, y = y, z = z)
 
-	def chat(self, msg):		#done
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+		processReturnMsg(returned_json, "setLocation", [feedback])		
+
+	def chat(self, msg):		
 		global conn
 		json_string = [
 			{
@@ -164,11 +167,12 @@ class Player:
 		]
 
 		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		processReturnMsg(returned_json, "chat")
+		processReturnMsg(returned_json, "chat", [])
 
 class Entity:
-	def __init__(self, uniqueId, location):
+	def __init__(self, uniqueId, ty, location):
 		self.uniqueId = uniqueId
+		self.type = ty
 		self.initLoca = location
 
 	def burn(self):
@@ -202,15 +206,18 @@ class Entity:
 		]
 
 		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		#server returns invoke
-		processReturnMsg(returned_json, cmd + "Entity")
+		feedback = "{cmd} {entity} at init location {x:.2f}, {y:.2f}, {z:.2f}".format(cmd = cmd, entity = self.type, 
+				x = self.initLoca.x, y = self.initLoca.y, z = self.initLoca.z)
+
+		#server returns invoked
+		processReturnMsg(returned_json, cmd + "Entity", [feedback])
 
 
 class World:
 	def __init__(self, index):
 		self.index = index 
 
-	def getBlock(self, x, y, z):		#done
+	def getBlock(self, x, y, z):		
 		#return Block
 		global conn
 		json_string = [
@@ -234,12 +241,12 @@ class World:
 		]
 
 		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		processReturnMsg(returned_json, "getBlock")		
+		processReturnMsg(returned_json, "getBlock", [])		
 
 		returned_dict = json.loads(returned_json)
 		return Block(self.index, returned_dict["type"], Location(x, y, z))
 
-	def spawnEntity(self, ty, x, y, z):		#done
+	def spawnEntity(self, ty, x, y, z):		
 		#return entity
 		json_string = [
 			{
@@ -262,14 +269,16 @@ class World:
 			}
 		]
 
+		feedback = "spawn {type} at {x:.2f}, {y:.2f}, {z:.2f}".format(type = ty.upper(), x = x, y = y, z = z)
+
 		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		processReturnMsg(returned_json, "spawnEntity")
+		processReturnMsg(returned_json, "spawnEntity", [feedback])
 		
 		returned_dict = json.loads(returned_json)
-		return Entity(returned_dict["uniqueId"], Location(x, y, z))
+		return Entity(returned_dict["uniqueId"], ty, Location(x, y, z))
 
 		
-	def setTime(self, time):	#done
+	def setTime(self, time):	
 		time = time.lower()
 
 		if time == "day" :
@@ -295,5 +304,6 @@ class World:
 			}
 		]
 
+		feedback = "set time to {time}".format(time = time.upper())
 		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		processReturnMsg(returned_json, "setTime")
+		processReturnMsg(returned_json, "setTime", [feedback])
