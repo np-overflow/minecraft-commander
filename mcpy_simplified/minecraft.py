@@ -2,27 +2,29 @@ from connection import Connection
 from location import Location
 from processReturnMsg import processReturnMsg
 import json
+import requests
 
 def create_connection(name, url):
-	global conn
-	global playerName
+	global conn, playerName, serverUrl
+	serverUrl = url + "/" + name
 	playerName = name
-	conn = Connection(name, url)
+	# conn = Connection(name, url)
 	print "Connection with " + url + " established"
 
 def getWorld(index):		#done
 	#return worldObj
-	global conn
-	json_string = {
-		"className": "wrapper.ServerWrapper",
-		"methodName": "getWorld",
-		"methodParams": [
-			index
-		]
-	}
-	conn.send(json.dumps([json_string]))
-
-	returned_json = conn.recv()
+	global conn, serverUrl
+	json_string = [
+		{
+			"className": "wrapper.ServerWrapper",
+			"methodName": "getWorld",
+			"methodParams": [
+				index
+			]
+		}
+	]
+	returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+	print returned_json
 	processReturnMsg(returned_json, "getWorld")
 
 	returned_dict = json.loads(returned_json)
@@ -36,18 +38,19 @@ def getWorld(index):		#done
 def getPlayer():		#done
 	#return Player
 	global conn, playerName
-	json_string = {
-		"className": "wrapper.ServerWrapper",
-		"methodName": "getPlayer",
-		"static": True,
-		"methodParams": [
-			playerName
-		]
-	}
+	json_string = [
+		{
+			"className": "wrapper.ServerWrapper",
+			"methodName": "getPlayer",
+			"static": True,
+			"methodParams": [
+				playerName
+			]
+		}
+	]
 
-	conn.send(json.dumps([json_string]))
+	returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
 
-	returned_json = conn.recv()
 	processReturnMsg(returned_json, "getPlayer")
 
 	returned_dict = json.loads(returned_json)
@@ -89,8 +92,8 @@ class Block:
 			}
 		]
 
-		conn.send(json.dumps(json_string))
-		processReturnMsg(conn.recv(), "setBlockType")
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+		processReturnMsg(returned_json, "setBlockType")
 
 class Player:
 	def __init__(self, name):
@@ -112,9 +115,8 @@ class Player:
 			}
 		]
 
-		conn.send(json.dumps(json_string))
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
 
-		returned_json = conn.recv()
 		processReturnMsg(returned_json, "getLocation")
 
 		returned_dict = json.loads(returned_json)
@@ -140,8 +142,8 @@ class Player:
 			}
 		]
 
-		conn.send(json.dumps(json_string))
-		processReturnMsg(conn.recv(), "setLocation")		
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+		processReturnMsg(returned_json, "setLocation")		
 
 	def chat(self, msg):		#done
 		global conn
@@ -161,8 +163,8 @@ class Player:
 			}
 		]
 
-		conn.send(json.dumps(json_string))
-		processReturnMsg(conn.recv(), "chat")
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+		processReturnMsg(returned_json, "chat")
 
 class Entity:
 	def __init__(self, uniqueId, location):
@@ -199,9 +201,9 @@ class Entity:
 			}
 		]
 
-		conn.send(json.dumps(json_string))
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
 		#server returns invoke
-		processReturnMsg(conn.recv(), cmd + "Entity")
+		processReturnMsg(returned_json, cmd + "Entity")
 
 
 class World:
@@ -231,8 +233,7 @@ class World:
 			}
 		]
 
-		conn.send(json.dumps(json_string))
-		returned_json = conn.recv()		#plain json
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
 		processReturnMsg(returned_json, "getBlock")		
 
 		returned_dict = json.loads(returned_json)
@@ -261,8 +262,7 @@ class World:
 			}
 		]
 
-		conn.send(json.dumps(json_string))
-		returned_json = conn.recv()
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
 		processReturnMsg(returned_json, "spawnEntity")
 		
 		returned_dict = json.loads(returned_json)
@@ -295,6 +295,5 @@ class World:
 			}
 		]
 
-		conn.send(json.dumps(json_string))
-		returned_json = conn.recv()
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
 		processReturnMsg(returned_json, "setTime")
