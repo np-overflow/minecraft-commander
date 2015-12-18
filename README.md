@@ -1,6 +1,12 @@
 # minecraft-commander
 
-This python library allows the usage of python scripts to communicate directly with a Minecraft server. This is useful if you would like to use scripts to easily build structures in Minecraft. [mineslave](#) plugin will need to be installed on the server for the library to work.
+This python library allows the usage of python scripts to communicate directly with a Minecraft server. This is useful if you will like to use scripts to easily build structures in Minecraft. [Mineslave](https://github.com/np-overflow/mineslave) plugin will need to be installed on the server for the library to work.
+
+## Challenge
+A demo and 2 challenge scripts with different difficulties are provided in the repository. The demo script can be run in the terminal using
+```
+python -m mcpy_simplified.challenges.challenge_demo
+```
 
 ## Usage
 Import library
@@ -12,7 +18,6 @@ Create connection to Minecraft Server
 ```python
 minecraft.create_connection(user, server_url)
 ```
-
 
 ### World
 ```python
@@ -55,7 +60,7 @@ player.chat("Hello World")
 ### Entity
 ```python
 #set name
-entity.setName("cow1")
+entity.setName("cow")
 
 #burn
 entity.burn()
@@ -69,9 +74,10 @@ entity.hurt()
 #kill
 entity.kill()
 ```
-
-
 *Location object contains position x, y and z as its attributes.*
 
+## Libraries
+This project depends on the following libraries:
+- [Requests](https://pypi.python.org/pypi/requests/#downloads)
 
 Have fun and enjoy using the library!
