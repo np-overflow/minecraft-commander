@@ -3,8 +3,9 @@ from location import Location
 from processReturnMsg import processReturnMsg
 import json
 import requests
+import sys
 
-def create_connection(name, url):
+def create_connection(name, url):	
 	global conn, playerName, serverUrl
 	serverUrl = url + "/" + name
 	playerName = name
@@ -13,46 +14,53 @@ def create_connection(name, url):
 
 def getWorld(index):		
 	#return worldObj
-	global conn, serverUrl
-	json_string = [
-		{
-			"className": "wrapper.ServerWrapper",
-			"methodName": "getWorld",
-			"methodParams": [
-				index
-			]
-		}
-	]
-	feedback = "got world {worldIndex}".format(worldIndex = index)
+	try :
+		global conn, serverUrl
+		json_string = [
+			{
+				"className": "wrapper.ServerWrapper",
+				"methodName": "getWorld",
+				"methodParams": [
+					index
+				]
+			}
+		]
+		feedback = "got world {worldIndex}".format(worldIndex = index)
 
-	returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-	processReturnMsg(returned_json, "getWorld", [feedback])
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+		processReturnMsg(returned_json, "getWorld", [feedback])
 
-	returned_dict = json.loads(returned_json)
-	return World(returned_dict["index"])
+		returned_dict = json.loads(returned_json)
+		return World(returned_dict["index"])
+	except :
+		print "[ERROR] Unable to get world " + str(index) 
+		sys.exit("Script will exit...")
 
 def getPlayer():		
 	#return Player
-	global conn, playerName
-	json_string = [
-		{
-			"className": "wrapper.ServerWrapper",
-			"methodName": "getPlayer",
-			"static": True,
-			"methodParams": [
-				playerName
-			]
-		}
-	]
+	try :
+		global conn, playerName
+		json_string = [
+			{
+				"className": "wrapper.ServerWrapper",
+				"methodName": "getPlayer",
+				"static": True,
+				"methodParams": [
+					playerName
+				]
+			}
+		]
 
-	feedback = "got {player}".format(player = playerName.upper())
+		feedback = "got {player}".format(player = playerName.upper())
 
-	returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-	processReturnMsg(returned_json, "getPlayer", [feedback])
+		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+		processReturnMsg(returned_json, "getPlayer", [feedback])
 
-	returned_dict = json.loads(returned_json)
-	return Player(returned_dict["playerName"])
-
+		returned_dict = json.loads(returned_json)
+		return Player(returned_dict["playerName"])
+	except :
+		print "[ERROR] Unable to get player " + playerName
+		sys.exit("Script will exit...")
 		
 class Block:
 	def __init__(self, worldIndex, ty, location):
@@ -89,39 +97,45 @@ class Block:
 			}
 		]
 
-		feedback = "got {type} at {x:.2f}, {y:.2f}, {z:.2f}".format(type = self.type.upper(), x = self.location.x, 
+		feedback = "set {type} at {x:.2f}, {y:.2f}, {z:.2f}".format(type = ty.upper(), x = self.location.x, 
 			y = self.location.y, z = self.location.z)
 
 		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
 		processReturnMsg(returned_json, "setBlockType", [feedback])
 
+
 class Player:
 	def __init__(self, name):
 		self.name = name
 
-	def getLocation(self): 		
-		#return Location 
-		json_string = [
-			{
-				"className": "wrapper.ServerWrapper",
-				"methodName": "getPlayer",
-				"methodParams": [
-					self.name
-				]
-			},
-			{
-				"methodName": "getLocation",
-				"methodParams": []
-			}
-		]
+	def getLocation(self): 
+		try : 		
+			#return Location 
+			json_string = [
+				{
+					"className": "wrapper.ServerWrapper",
+					"methodName": "getPlayer",
+					"methodParams": [
+						self.name
+					]
+				},
+				{
+					"methodName": "getLocation",
+					"methodParams": []
+				}
+			]
 
 
-		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		returned_dict = json.loads(returned_json)
-		feedback = "returned {x:.2f}, {y:.2f}, {z:.2f}".format(x = returned_dict["x"], y = returned_dict["y"], z = returned_dict["z"])
+			returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+			returned_dict = json.loads(returned_json)
+			feedback = "returned {x:.2f}, {y:.2f}, {z:.2f}".format(x = returned_dict["x"], y = returned_dict["y"], z = returned_dict["z"])
 
-		processReturnMsg(returned_json, "getLocation", [feedback])
-		return Location(returned_dict["x"], returned_dict["y"], returned_dict["z"])	
+			processReturnMsg(returned_json, "getLocation", [feedback])
+			return Location(returned_dict["x"], returned_dict["y"], returned_dict["z"])	
+		except : 
+			print "[ERROR] Unable to get location of " + playerName
+			sys.exit("Script will exit...")\
+			
 
 	def setLocation(self, x, y, z):		
 		#send location
