@@ -7,7 +7,7 @@ import time, json, random
 def loadData():
 	global block_list
 
-	with open("mcpy_simplified/minecraft_data.json", "r") as f:
+	with open("mcpy_simplified/data/minecraft_data.json", "r") as f:
 		data = json.loads(f.read())
 
 	block_list = data['blockTypes']

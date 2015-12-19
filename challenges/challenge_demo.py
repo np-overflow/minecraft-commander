@@ -6,7 +6,7 @@ import time, json, random
 def loadData():
 	global block_list
 
-	with open("mcpy_simplified/minecraft_data.json", "r") as f:
+	with open("mcpy_simplified/data/minecraft_data.json", "r") as f:
 		data = json.loads(f.read())
 
 	block_list = data['blockTypes']
@@ -26,8 +26,8 @@ def main() :
 	y = location.y 
 	z = location.z
 
-	#world.setTime("day")
-	#time.sleep(2)
+	world.setTime("day")
+	time.sleep(2)
 	
 	#create 3 x 3 stone block
 	for j in range(3) : 
