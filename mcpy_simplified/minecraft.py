@@ -33,7 +33,7 @@ def getWorld(index):
 		returned_dict = json.loads(returned_json)
 		return World(returned_dict["index"])
 	except :
-		print "[ERROR] Unable to get world " + str(index) 
+		print "[ERROR] getWorld\t\tUnable to get world " + str(index) 
 		sys.exit("Script will exit...")
 
 def getPlayer():		
@@ -59,7 +59,7 @@ def getPlayer():
 		returned_dict = json.loads(returned_json)
 		return Player(returned_dict["playerName"])
 	except :
-		print "[ERROR] Unable to get player " + playerName
+		print "[ERROR] getPlayer\t\tUnable to get player " + playerName
 		sys.exit("Script will exit...")
 		
 class Block:
@@ -69,40 +69,42 @@ class Block:
 		self.location = location
 
 	def setType(self, ty):		
-		global conn
-		json_string = [
-			{
-				"className": "wrapper.ServerWrapper",
-				"methodName": "getWorld",
-				"static": True,
-				"methodParams": [
-					self.worldIndex
-				]
-			},
-			{
-				"methodName": "getBlock",
-				"static": False,
-				"methodParams": [
-					self.location.x, 
-					self.location.y,
-					self.location.z
-				]
-			},
-			{
-				"methodName": "setType",
-				"static": False,
-				"methodParams": [
-					ty
-				]
-			}
-		]
+		try : 
+			global conn
+			json_string = [
+				{
+					"className": "wrapper.ServerWrapper",
+					"methodName": "getWorld",
+					"static": True,
+					"methodParams": [
+						self.worldIndex
+					]
+				},
+				{
+					"methodName": "getBlock",
+					"static": False,
+					"methodParams": [
+						self.location.x, 
+						self.location.y,
+						self.location.z
+					]
+				},
+				{
+					"methodName": "setType",
+					"static": False,
+					"methodParams": [
+						ty
+					]
+				}
+			]
 
-		feedback = "set {type} at {x:.2f}, {y:.2f}, {z:.2f}".format(type = ty.upper(), x = self.location.x, 
-			y = self.location.y, z = self.location.z)
+			feedback = "set {type} at {x:.2f}, {y:.2f}, {z:.2f}".format(type = ty.upper(), x = self.location.x, 
+				y = self.location.y, z = self.location.z)
 
-		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		processReturnMsg(returned_json, "setBlockType", [feedback])
-
+			returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+			processReturnMsg(returned_json, "setBlockType", [feedback])
+		except :
+			return
 
 class Player:
 	def __init__(self, name):
@@ -133,8 +135,8 @@ class Player:
 			processReturnMsg(returned_json, "getLocation", [feedback])
 			return Location(returned_dict["x"], returned_dict["y"], returned_dict["z"])	
 		except : 
-			print "[ERROR] Unable to get location of " + playerName
-			sys.exit("Script will exit...")\
+			print "[ERROR] getLocation\t\tUnable to get location of " + playerName
+			sys.exit("Script will exit...")
 			
 
 	def setLocation(self, x, y, z):		
@@ -226,7 +228,6 @@ class Entity:
 		#server returns invoked
 		processReturnMsg(returned_json, cmd + "Entity", [feedback])
 
-
 class World:
 	def __init__(self, index):
 		self.index = index 
@@ -260,64 +261,69 @@ class World:
 		returned_dict = json.loads(returned_json)
 		return Block(self.index, returned_dict["type"], Location(x, y, z))
 
-	def spawnEntity(self, ty, x, y, z):		
-		#return entity
-		json_string = [
-			{
-				"className": "wrapper.ServerWrapper",
-				"methodName": "getWorld",
-				"static": True,
-				"methodParams": [
-					self.index
-				]
-			},
-			{
-				"className": "wrapper.WorldWrapper",
-				"methodName": "spawnEntity",
-				"methodParams": [
-					ty,
-					x,
-					y,
-					z
-				]
-			}
-		]
+	def spawnEntity(self, ty, x, y, z):	
+		try : 	
+			#return entity
+			json_string = [
+				{
+					"className": "wrapper.ServerWrapper",
+					"methodName": "getWorld",
+					"static": True,
+					"methodParams": [
+						self.index
+					]
+				},
+				{
+					"className": "wrapper.WorldWrapper",
+					"methodName": "spawnEntity",
+					"methodParams": [
+						ty,
+						x,
+						y,
+						z
+					]
+				}
+			]
 
-		feedback = "spawn {type} at {x:.2f}, {y:.2f}, {z:.2f}".format(type = ty.upper(), x = x, y = y, z = z)
+			feedback = "spawn {type} at {x:.2f}, {y:.2f}, {z:.2f}".format(type = ty.upper(), x = x, y = y, z = z)
 
-		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		processReturnMsg(returned_json, "spawnEntity", [feedback])
+			returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+			processReturnMsg(returned_json, "spawnEntity", [feedback])
+			
+			returned_dict = json.loads(returned_json)
+			return Entity(returned_dict["uniqueId"], ty, Location(x, y, z))
+		except :
+			print "[ERROR] {type} is not a valid entity type".format(type = ty)
 		
-		returned_dict = json.loads(returned_json)
-		return Entity(returned_dict["uniqueId"], ty, Location(x, y, z))
+	def setTime(self, time):
+		try : 	
+			time = time.lower()
 
-		
-	def setTime(self, time):	
-		time = time.lower()
+			if time == "day" :
+				timeIndex = 0
+			elif time == "night" :
+				timeIndex = 15000
 
-		if time == "day" :
-			timeIndex = 0
-		elif time == "night" :
-			timeIndex = 15000
+			json_string = [
+				{
+					"className": "wrapper.ServerWrapper",
+					"methodName": "getWorld",
+					"static": True,
+					"methodParams": [
+						self.index
+					]
+				},	
+				{
+					"className": "wrapper.WorldWrapper",
+					"methodName": "setTime",
+					"methodParams": [
+						timeIndex
+					]
+				}
+			]
 
-		json_string = [
-			{
-				"className": "wrapper.ServerWrapper",
-				"methodName": "getWorld",
-				"static": True,
-				"methodParams": [
-					self.index
-				]
-			},	
-			{
-				"className": "wrapper.WorldWrapper",
-				"methodName": "setTime",
-				"methodParams": [
-					timeIndex
-				]
-			}
-		]
-
-		feedback = "set time to {time}".format(time = time.upper())
-		returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
-		processReturnMsg(returned_json, "setTime", [feedback])
+			feedback = "set time to {time}".format(time = time.upper())
+			returned_json = requests.post(serverUrl, data=json.dumps(json_string)).text
+			processReturnMsg(returned_json, "setTime", [feedback])
+		except :
+			print "[ERROR] Invalid time, enter only 'day' or 'night'"
