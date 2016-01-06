@@ -1,10 +1,21 @@
-#Generates a 5 x 5 cube with alternating blocks
+#Generates a 5 x 5 cube 
+#using two different types of blocks interlacing each other
 
 from ..mcpy_simplified import minecraft, location
+import time, json, random
+
+def loadData():
+	global block_list
+
+	with open("mcpy_simplified/data/minecraft_data.json", "r") as f:
+		data = json.loads(f.read())
+
+	block_list = data['blockTypes']
 
 def main() :
-	block_list = ["WOOD", "STONE"]
-
+	global block_list
+	loadData()
+	
 	#Change to username
 	mc = minecraft.create_connection("rias", "http://cfcmc.duncanleo.me:8080")
 	world = minecraft.getWorld(0)
@@ -17,14 +28,18 @@ def main() :
 	z = location.z
 
 	world.setTime("day")
+	time.sleep(2)
 
 	checker = 0
-	blockType1 = block_list[0]
-	blockType2 = block_list[1]
+	blockType1 = random.choice(block_list)
+	blockType2 = random.choice(block_list)
+	while (blockType1 == blockType2) :
+		blockType1 = random.choice(block_list)
+		blockType2 = random.choice(block_list)
 
 	for k in range(5) :
 		for i in range(5) :
-			for j in range(5) : 
+			for j in range(5) :
 				block = world.getBlock(x + j, y + k, z + i)
 				if (checker % 2) == 0 : 
 					block.setType(blockType1)

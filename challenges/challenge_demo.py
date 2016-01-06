@@ -1,19 +1,9 @@
 #Generates a 3 x 3 flat stone block for demo 
 
 from ..mcpy_simplified import minecraft, location
-import time, json, random
-
-def loadData():
-	global block_list
-
-	with open("mcpy_simplified/data/minecraft_data.json", "r") as f:
-		data = json.loads(f.read())
-
-	block_list = data['blockTypes']
 
 def main() :
-	global block_list
-	loadData()
+	block_list = ["BEDROCK", "COBBLESTONE", "GLASS", "BRICK", "ICE"]
 
 	#Change to username
 	mc = minecraft.create_connection("rias", "http://cfcmc.duncanleo.me:8080")
@@ -27,13 +17,20 @@ def main() :
 	z = location.z
 
 	world.setTime("day")
-	time.sleep(2)
 	
-	#create 3 x 3 stone block
+	"""
+	START EDITING HERE
+	"""
+
+	#create 3 x 3 stone block_list
 	for j in range(3) : 
 		for k in range(3) :
 			block = world.getBlock(x + k, y, z + j)
 			block.setType("STONE")
+
+	""""
+	END OF EDITING
+	"""
 
 if __name__ == "__main__" :
 	main()

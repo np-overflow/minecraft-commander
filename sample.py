@@ -4,7 +4,7 @@ import json, time
 def loadData():
 	global block_list
 
-	with open("data/full_minecraft_data.json", "r") as f:
+	with open("data/minecraft_data.json", "r") as f:
 		data = json.loads(f.read())
 
 	block_list = data['blockTypes']
@@ -50,7 +50,7 @@ def main():
 		block.setType(block_list[countFromZero])
 		count += 1
 		countFromZero += 1
-		"""
+	"""
 
 if __name__ == "__main__" :
 	main()
